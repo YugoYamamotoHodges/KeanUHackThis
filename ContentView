@@ -1,0 +1,178 @@
+import SwiftUI
+import FamilyControls
+import ManagedSettings
+import DeviceActivity
+
+struct ContentView: View {
+    @StateObject private var model = PreScrollModel()
+
+    var body: some View {
+        NavigationStack {
+            if model.activeMission == nil {
+                setupView
+            } else {
+                missionView
+            }
+        }
+    }
+
+    var setupView: some View {
+        VStack(spacing: 24) {
+            VStack(spacing: 8) {
+                Text("PreScroll")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("Use social media like a tool, not a trap.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button {
+                Task { await model.requestAuthorization() }
+            } label: {
+                Label("Allow Screen Time Access", systemImage: "lock.shield")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+
+            Button {
+                model.showActivityPicker = true
+            } label: {
+                Label("Choose distracting apps", systemImage: "app.badge")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .disabled(!model.isAuthorized)
+
+            Button {
+                model.enableShield()
+            } label: {
+                Label("Turn Work Mode ON", systemImage: "shield.fill")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.green)
+            .disabled(model.selection.applicationTokens.isEmpty)
+
+            Button {
+                model.disableShield()
+            } label: {
+                Label("Turn Work Mode OFF", systemImage: "shield.slash")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(.red)
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Status")
+                    .font(.headline)
+
+                Text("Authorization: \(model.isAuthorized ? "Granted" : "Not granted")")
+                Text("Selected apps: \(model.selection.applicationTokens.count)")
+                Text("Work Mode: \(model.isShieldEnabled ? "ON" : "OFF")")
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(.thinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+
+            Spacer()
+        }
+        .padding()
+        .navigationTitle("Setup")
+        .familyActivityPicker(
+            isPresented: $model.showActivityPicker,
+            selection: $model.selection
+        )
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Demo Mission") {
+                    model.startMission(.findHooks)
+                }
+            }
+        }
+    }
+
+    var missionView: some View {
+        VStack(spacing: 28) {
+            Text("What are you here to do?")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+
+            VStack(spacing: 14) {
+                missionButton("Find 3 hooks", .findHooks)
+                missionButton("Research competitors", .researchCompetitors)
+                missionButton("Check comments", .checkComments)
+                missionButton("Upload content", .uploadContent)
+                missionButton("Just scroll", .justScroll, tint: .gray)
+            }
+
+            if let mission = model.activeMission {
+                Divider()
+
+                VStack(spacing: 10) {
+                    Text("Current Mission")
+                        .font(.headline)
+
+                    Text(mission.title)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+
+                    Text(model.timerText)
+                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+
+                    Button {
+                        model.openSelectedPlatformTemporarily()
+                    } label: {
+                        Label("Open app for mission", systemImage: "arrow.up.right.square")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        model.completeMission()
+                    } label: {
+                        Label("Complete Mission", systemImage: "checkmark.circle")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.green)
+
+                    Button {
+                        model.cancelMission()
+                    } label: {
+                        Text("Cancel")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.red)
+                }
+                .padding()
+                .background(.thinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+            }
+
+            Spacer()
+        }
+        .padding()
+        .navigationTitle("Mission")
+    }
+
+    func missionButton(_ title: String, _ type: MissionType, tint: Color = .blue) -> some View {
+        Button {
+            model.startMission(type)
+        } label: {
+            Text(title)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(tint)
+    }
+}
