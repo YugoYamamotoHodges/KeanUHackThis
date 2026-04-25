@@ -1,0 +1,160 @@
+import Foundation
+import SwiftUI
+import Combine
+import FamilyControls
+import ManagedSettings
+import DeviceActivity
+import UIKit
+
+enum MissionType: String, CaseIterable, Identifiable {
+    case findHooks
+    case researchCompetitors
+    case checkComments
+    case uploadContent
+    case justScroll
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .findHooks:
+            return "Find 3 hooks"
+        case .researchCompetitors:
+            return "Research competitors"
+        case .checkComments:
+            return "Check comments"
+        case .uploadContent:
+            return "Upload content"
+        case .justScroll:
+            return "Just scroll"
+        }
+    }
+}
+
+struct ActiveMission: Identifiable {
+    let id = UUID()
+    let type: MissionType
+    let title: String
+    let startedAt: Date
+    let durationSeconds: Int
+}
+
+@MainActor
+final class PreScrollModel: ObservableObject {
+    @Published var isAuthorized = false
+    @Published var showActivityPicker = false
+    @Published var selection = FamilyActivitySelection()
+    @Published var isShieldEnabled = false
+
+    @Published var activeMission: ActiveMission?
+    @Published var remainingSeconds = 300
+
+    private let store = ManagedSettingsStore()
+    private var timer: Timer?
+
+    var timerText: String {
+        let minutes = remainingSeconds / 60
+        let seconds = remainingSeconds % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+
+    func requestAuthorization() async {
+        do {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            isAuthorized = true
+            print("✅ Family Controls authorization granted")
+        } catch {
+            isAuthorized = false
+            print("❌ Authorization failed: \(error.localizedDescription)")
+        }
+    }
+
+    func enableShield() {
+        guard !selection.applicationTokens.isEmpty else {
+            print("⚠️ No apps selected")
+            return
+        }
+
+        store.shield.applications = selection.applicationTokens
+        isShieldEnabled = true
+
+        print("✅ Shield enabled for \(selection.applicationTokens.count) apps")
+    }
+
+    func disableShield() {
+        store.shield.applications = nil
+        isShieldEnabled = false
+
+        print("✅ Shield disabled")
+    }
+
+    func startMission(_ type: MissionType) {
+        activeMission = ActiveMission(
+            type: type,
+            title: type.title,
+            startedAt: Date(),
+            durationSeconds: 300
+        )
+
+        remainingSeconds = 300
+        startTimer()
+
+        print("🚀 Mission started: \(type.title)")
+    }
+
+    func completeMission() {
+        guard let mission = activeMission else { return }
+
+        stopTimer()
+        enableShield()
+
+        print("✅ Mission completed: \(mission.title)")
+        activeMission = nil
+    }
+
+    func cancelMission() {
+        stopTimer()
+        enableShield()
+
+        print("❌ Mission cancelled")
+        activeMission = nil
+    }
+
+    func openSelectedPlatformTemporarily() {
+        // MVP behavior:
+        // Remove shield so user can open TikTok/Instagram manually.
+        // In a production version, we would use deep links if available.
+        disableShield()
+
+        print("🔓 Temporary access granted for mission")
+
+        // Try to open TikTok. If not installed, nothing happens.
+        if let url = URL(string: "tiktok://") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func startTimer() {
+        stopTimer()
+
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+
+                if self.remainingSeconds > 0 {
+                    self.remainingSeconds -= 1
+                } else {
+                    self.stopTimer()
+                    self.enableShield()
+                    print("⏰ Mission time ended")
+                    self.activeMission = nil
+                }
+            }
+        }
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+}
