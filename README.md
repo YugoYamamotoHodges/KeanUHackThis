@@ -1,9 +1,9 @@
-# KeanUHackThis
-PreScroll
 
-PreScroll is an iOS app that helps content creators use social media with intention instead of distraction.
+# PreScroll
 
-Instead of blocking apps like Instagram or TikTok, PreScroll transforms how they are used.
+### PreScroll is an iOS app that helps content creators use social media with intention instead of distraction.
+
+### Instead of blocking apps like Instagram or TikTok, PreScroll transforms how they are used.
 
 The Problem:
 
