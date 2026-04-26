@@ -56,7 +56,7 @@ Codex (debugging)
 
 Screenshots of key features:
 
-<img width="512" height="1109" alt="Screenshot 2026-04-26 022216" src="https://github.com/user-attachments/assets/26dddc6d-e8da-4ac9-8d52-9c5fa3f96aab" />
+<img width="200" height="500" alt="Screenshot 2026-04-26 022216" src="https://github.com/user-attachments/assets/26dddc6d-e8da-4ac9-8d52-9c5fa3f96aab" />
 
 <img width="486" height="1091" alt="Screenshot 2026-04-26 022244" src="https://github.com/user-attachments/assets/b98c4021-08d8-4c1a-bc26-5d4dc49f2184" />
 
