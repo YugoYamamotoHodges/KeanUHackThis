@@ -53,3 +53,18 @@ Supabase (authentication + database)
 Stripe (subscriptions via web)
 Lovable (web frontend for auth + billing)
 Codex (debugging)
+
+Screenshots of key features:
+
+<img width="512" height="1109" alt="Screenshot 2026-04-26 022216" src="https://github.com/user-attachments/assets/26dddc6d-e8da-4ac9-8d52-9c5fa3f96aab" />
+
+<img width="486" height="1091" alt="Screenshot 2026-04-26 022244" src="https://github.com/user-attachments/assets/b98c4021-08d8-4c1a-bc26-5d4dc49f2184" />
+
+<img width="499" height="1095" alt="Screenshot 2026-04-26 022342" src="https://github.com/user-attachments/assets/7442fae6-c279-4a07-8f1c-6319f0398889" />
+
+<img width="503" height="1096" alt="Screenshot 2026-04-26 022312" src="https://github.com/user-attachments/assets/605bb9cb-8ae9-42c7-9061-4954c459be2c" />
+
+<img width="510" height="1096" alt="Screenshot 2026-04-26 022411" src="https://github.com/user-attachments/assets/ecd1c4d5-aba5-42a2-bb61-b26630d80ca0" />
+
+
+
